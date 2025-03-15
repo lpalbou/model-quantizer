@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument("--max_tokens", required=True, type=int, help="Maximum number of tokens to generate (required)")
     parser.add_argument("--output_dir", required=True, help="Directory to save benchmark results (required)")
     parser.add_argument("--quiet", action="store_true", help="Run in quiet mode with minimal output")
+    parser.add_argument("--update-model-card", action="store_true", help="Update the model card with benchmark results")
     
     return parser.parse_args()
 
@@ -38,6 +39,8 @@ def run_benchmark(args):
     print(f"Max tokens: {args.max_tokens}")
     print(f"Results file: {results_file}")
     print(f"Report directory: {report_dir}")
+    if args.update_model_card:
+        print("Model card will be updated with benchmark results")
     
     # Run benchmark
     benchmark_cmd = [
@@ -54,6 +57,9 @@ def run_benchmark(args):
         print("Running benchmark in quiet mode...")
     else:
         print("Running benchmark...")
+    
+    if args.update_model_card:
+        benchmark_cmd.append("--update-model-card")
     
     benchmark_result = subprocess.run(benchmark_cmd, check=False)
     

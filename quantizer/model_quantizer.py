@@ -21,6 +21,7 @@ from transformers import (
 )
 
 from .quantization_config import QuantizationConfig
+from .model_card import generate_model_card, update_model_card_with_benchmark
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -296,12 +297,13 @@ class ModelQuantizer:
         
         logger.info(f"Model quantized successfully with AWQ ({self.config.bits}-bit)")
     
-    def save(self, output_dir: Optional[str] = None):
+    def save(self, output_dir: Optional[str] = None, hf_username: Optional[str] = None):
         """
         Save the quantized model and tokenizer to disk.
         
         Args:
             output_dir: Directory to save the model. If None, use the one from config.
+            hf_username: Hugging Face username for the model card. If None, a placeholder is used.
         """
         if self.model is None or self.tokenizer is None:
             raise ValueError("Model and tokenizer must be quantized before saving.")
@@ -321,6 +323,39 @@ class ModelQuantizer:
         config_path = os.path.join(output_dir, "quantization_config.json")
         with open(config_path, "w") as f:
             json.dump(self.config.to_dict(), f, indent=2)
+        
+        # Generate model card
+        model_name = os.path.basename(output_dir)
+        original_model_name = self.config.model_name
+        
+        # Determine calibration dataset name
+        calibration_dataset = "c4"
+        if isinstance(self.config.calibration_dataset, str):
+            calibration_dataset = self.config.calibration_dataset
+        
+        # Generate additional args string
+        additional_args = ""
+        if self.config.group_size != 128:
+            additional_args += f" --group-size {self.config.group_size}"
+        if self.config.desc_act:
+            additional_args += " --desc-act"
+        if not self.config.sym:
+            additional_args += " --no-sym"
+        
+        logger.info(f"Generating model card for {model_name}")
+        generate_model_card(
+            model_name=model_name,
+            original_model_name=original_model_name,
+            method=self.config.method,
+            bits=self.config.bits,
+            output_dir=output_dir,
+            group_size=self.config.group_size,
+            desc_act=self.config.desc_act,
+            sym=self.config.sym,
+            hf_username=hf_username,
+            calibration_dataset=calibration_dataset,
+            additional_args=additional_args
+        )
         
         logger.info(f"Model saved to {output_dir}")
     
@@ -398,57 +433,48 @@ class ModelQuantizer:
         # Extract username and model name from repo_id
         username, model_name = repo_id.split("/")
         
-        # Create model card
-        model_card = f"""---
-language: en
-tags:
-  - quantized
-  - {self.config.method}
-  - {self.config.bits}bit
-license: same-as-original
----
-
-# {model_name}
-
-This is a quantized version of [{original_model}](https://huggingface.co/{original_model}) using {self.config.method.upper()} quantization at {self.config.bits}-bit precision.
-
-## Model Description
-
-This model was quantized using the [Model Quantizer](https://github.com/lpalbou/model-quantizer) tool.
-
-## Quantization Details
-
-- **Original Model**: [{original_model}](https://huggingface.co/{original_model})
-- **Quantization Method**: {self.config.method.upper()}
-- **Bit Width**: {self.config.bits}-bit
-- **Group Size**: {self.config.group_size}
-- **Symmetric Quantization**: {self.config.sym}
-
-## Usage
-
-```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-# Load the quantized model
-model = AutoModelForCausalLM.from_pretrained("{repo_id}", device_map="auto")
-tokenizer = AutoTokenizer.from_pretrained("{repo_id}")
-
-# Generate text
-inputs = tokenizer("Your prompt here", return_tensors="pt")
-outputs = model.generate(**inputs, max_new_tokens=100)
-print(tokenizer.decode(outputs[0], skip_special_tokens=True))
-```
-
-## Why Use Quantized Models?
-
-1. **Memory Efficiency**: Quantized models require significantly less memory than their full-precision counterparts.
-2. **Faster Inference**: Quantized models often have faster inference times due to reduced memory bandwidth requirements.
-3. **Cross-Platform Compatibility**: GPTQ quantization works on all platforms, including macOS where BitsAndBytes doesn't work.
-
-## License
-
-This model is subject to the same license as the original model.
-"""
+        # Determine calibration dataset name
+        calibration_dataset = "c4"
+        if isinstance(self.config.calibration_dataset, str):
+            calibration_dataset = self.config.calibration_dataset
+        
+        # Generate additional args string
+        additional_args = ""
+        if self.config.group_size != 128:
+            additional_args += f" --group-size {self.config.group_size}"
+        if self.config.desc_act:
+            additional_args += " --desc-act"
+        if not self.config.sym:
+            additional_args += " --no-sym"
+        
+        # Create a temporary directory to generate the model card
+        import tempfile
+        temp_dir = tempfile.mkdtemp()
+        
+        # Generate the model card
+        model_card_path = generate_model_card(
+            model_name=model_name,
+            original_model_name=original_model,
+            method=self.config.method,
+            bits=self.config.bits,
+            output_dir=temp_dir,
+            group_size=self.config.group_size,
+            desc_act=self.config.desc_act,
+            sym=self.config.sym,
+            hf_username=username,
+            calibration_dataset=calibration_dataset,
+            additional_args=additional_args
+        )
+        
+        # Read the model card
+        with open(model_card_path, "r") as f:
+            model_card = f.read()
+        
+        # Clean up temporary directory
+        import shutil
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        
         return model_card
     
     @classmethod

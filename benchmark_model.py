@@ -19,6 +19,13 @@ from datetime import datetime
 from threading import Thread
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 
+# Import model card utilities
+try:
+    from quantizer.model_card import update_model_card_with_benchmark
+    MODEL_CARD_AVAILABLE = True
+except ImportError:
+    MODEL_CARD_AVAILABLE = False
+
 class MemoryTracker:
     """Track memory usage during model interaction."""
     def __init__(self):
@@ -338,7 +345,7 @@ def create_test_prompts():
     
     return prompts
 
-def compare_models(original_model_path, quantized_model_path, device="cpu", max_new_tokens=100, verbose=True, output_file=None):
+def compare_models(original_model_path, quantized_model_path, device="cpu", max_new_tokens=100, verbose=True, output_file=None, update_model_card=False):
     """Compare original and quantized models."""
     prompts = create_test_prompts()
     
@@ -384,6 +391,53 @@ def compare_models(original_model_path, quantized_model_path, device="cpu", max_
         with open(output_file, 'w') as f:
             json.dump(benchmark_results, f, indent=2)
         print(f"\nBenchmark results saved to {output_file}")
+    
+    # Update model card if requested
+    if update_model_card and MODEL_CARD_AVAILABLE:
+        try:
+            # Format benchmark results for model card
+            formatted_results = {
+                "memory_metrics": {
+                    "initial_memory": quantized_stats["memory"]["initial_memory"],
+                    "min_memory": quantized_stats["memory"]["min_memory"],
+                    "max_memory": quantized_stats["memory"]["max_memory"],
+                    "avg_memory": quantized_stats["memory"]["avg_memory"]
+                },
+                "performance_metrics": {
+                    "load_time": quantized_stats["performance"]["load_time"],
+                    "prompt_tokens_per_sec": quantized_stats["performance"]["prompt_tokens_per_sec"],
+                    "generation_tokens_per_sec": quantized_stats["performance"]["generation_tokens_per_sec"]
+                },
+                "quality_metrics": {},
+                "comparison": {
+                    "Original": {
+                        "memory": original_stats["memory"]["max_memory"],
+                        "load_time": original_stats["performance"]["load_time"],
+                        "generation_speed": original_stats["performance"]["generation_tokens_per_sec"],
+                        "quality": "Baseline"
+                    },
+                    "Quantized": {
+                        "memory": quantized_stats["memory"]["max_memory"],
+                        "load_time": quantized_stats["performance"]["load_time"],
+                        "generation_speed": quantized_stats["performance"]["generation_tokens_per_sec"],
+                        "quality": "See metrics"
+                    }
+                }
+            }
+            
+            # Add quality metrics if available
+            if "quality" in quantized_stats and "quality" in original_stats:
+                for metric, value in quantized_stats["quality"].items():
+                    formatted_results["quality_metrics"][metric] = {
+                        "original": original_stats["quality"].get(metric, 0),
+                        "quantized": value
+                    }
+            
+            # Update the model card
+            updated_card = update_model_card_with_benchmark(quantized_model_path, formatted_results)
+            print(f"\nModel card updated with benchmark results: {updated_card}")
+        except Exception as e:
+            print(f"\nFailed to update model card: {e}")
     
     # Print summary
     print_benchmark_summary(benchmark_results)
@@ -508,6 +562,7 @@ def main():
     parser.add_argument("--max_new_tokens", type=int, default=100, help="Maximum number of tokens to generate")
     parser.add_argument("--output", type=str, help="Output file to save benchmark results (JSON)")
     parser.add_argument("--quiet", action="store_true", help="Reduce verbosity")
+    parser.add_argument("--update-model-card", action="store_true", help="Update the model card with benchmark results")
     args = parser.parse_args()
     
     compare_models(
@@ -516,7 +571,8 @@ def main():
         args.device,
         args.max_new_tokens,
         not args.quiet,
-        args.output
+        args.output,
+        args.update_model_card
     )
 
 if __name__ == "__main__":

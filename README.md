@@ -370,3 +370,27 @@ See the [Phi-4-Mini Quantization Guide](docs/phi4_mini.md) for more details.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Publishing Models
+
+After quantizing and benchmarking your model, you can publish it to the Hugging Face Hub:
+
+```bash
+model-quantizer microsoft/phi-4-mini-instruct --bits 4 --method gptq --publish --repo-id YOUR_USERNAME/phi-4-mini-gptq-4bit
+```
+
+This will:
+1. Quantize the model
+2. Save it locally
+3. Generate a comprehensive model card with model details, quantization parameters, and estimated memory usage
+4. Upload it to the Hugging Face Hub under the specified repository ID
+
+You can also enhance your model card with benchmark results by running:
+
+```bash
+run-benchmark --original microsoft/phi-4-mini-instruct --quantized ./quantized-model --device cpu --max_tokens 100 --output_dir ./benchmark_results --update-model-card
+```
+
+This will automatically update the model card with memory usage, loading time, generation speed, and comparison with the original model.
+
+For more details, see the [Publishing Guide](docs/publishing.md).
