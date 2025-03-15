@@ -2,6 +2,13 @@
 
 All notable changes to the Model Quantizer project will be documented in this file.
 
+## [0.3.3] - 2025-03-18
+
+### Added
+- Added explicit links to GitHub repository and PyPI package in documentation
+- Improved model card template to include better credit to Model Quantizer
+- Enhanced installation instructions with direct links to PyPI
+
 ## [0.3.2] - 2025-03-18
 
 ### Fixed

@@ -5,6 +5,9 @@ A tool for quantizing and saving Hugging Face models, with comprehensive benchma
 [![PyPI version](https://badge.fury.io/py/model-quantizer.svg)](https://badge.fury.io/py/model-quantizer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**GitHub**: [https://github.com/lpalbou/model-quantizer](https://github.com/lpalbou/model-quantizer)  
+**PyPI**: [https://pypi.org/project/model-quantizer/](https://pypi.org/project/model-quantizer/)
+
 ## Why Model Quantizer?
 
 - **Cross-Platform Compatibility**: BitsAndBytes doesn't work on macOS/OSX, but Hugging Face GPTQ implementation does
@@ -42,8 +45,20 @@ The Model Quantizer provides a complete workflow for working with quantized mode
 
 ### From PyPI (Recommended)
 
+The easiest way to install Model Quantizer is directly from [PyPI](https://pypi.org/project/model-quantizer/):
+
 ```bash
 pip install model-quantizer
+```
+
+For specific features, you can install with extras:
+
+```bash
+pip install model-quantizer[gptq]         # For GPTQ quantization
+pip install model-quantizer[bitsandbytes] # For BitsAndBytes quantization
+pip install model-quantizer[awq]          # For AWQ quantization
+pip install model-quantizer[viz]          # For visualization tools
+pip install model-quantizer[all]          # For all features
 ```
 
 ### Complete Installation (All Features)

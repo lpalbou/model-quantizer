@@ -69,9 +69,13 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 
 ## Quantization Process
 
-This model was quantized using the [Model Quantizer](https://github.com/lpalbou/model-quantizer) tool with the following command:
+This model was quantized using [Model Quantizer](https://github.com/lpalbou/model-quantizer), an open-source tool for quantizing and benchmarking Hugging Face models. You can quantize your own models with:
 
 ```bash
+# Install from PyPI
+pip install model-quantizer
+
+# Quantize any model
 model-quantizer {ORIGINAL_MODEL_NAME} --bits {BITS} --method {METHOD} --output-dir {OUTPUT_DIR} {ADDITIONAL_ARGS}
 ```
 
