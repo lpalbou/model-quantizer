@@ -34,6 +34,13 @@ model-quantizer microsoft/Phi-4-mini-instruct --bits 8 --method gptq --output-di
 model-quantizer microsoft/Phi-4-mini-instruct --bits 4 --method gptq --output-dir phi4-mini-gptq-4bit
 ```
 
+For Mac users, explicitly specifying the CPU device can help ensure compatibility:
+
+```bash
+# Explicitly use CPU device on Mac
+model-quantizer microsoft/Phi-4-mini-instruct --bits 4 --method gptq --device cpu --output-dir phi4-mini-gptq-4bit
+```
+
 ### BitsAndBytes Quantization (Best for CUDA devices)
 
 BitsAndBytes is optimized for CUDA devices:
@@ -61,10 +68,10 @@ After quantizing, benchmark the model to evaluate its performance:
 
 ```bash
 # Run the automated benchmark process
-run-benchmark --original microsoft/Phi-4-mini-instruct --quantized ./phi4-mini-gptq-4bit --device cpu --max_tokens 50 --output_dir benchmark_results
+run-benchmark --original microsoft/Phi-4-mini-instruct --quantized ./phi4-mini-gptq-4bit --device cpu --max_tokens 50 --output_dir benchmark_results --update-model-card
 ```
 
-This will generate a comprehensive report comparing the original and quantized models.
+This will generate a comprehensive report comparing the original and quantized models and update the model card with benchmark results.
 
 ## Interactive Testing
 
@@ -94,8 +101,8 @@ model-quantizer microsoft/Phi-4-mini-instruct --bits 4 --method gptq --output-di
 | Original (FP16) | ~8.4GB | Baseline | Baseline | Baseline |
 | GPTQ 8-bit | ~4.2GB | Similar | Slightly slower | Very close to original |
 | GPTQ 4-bit | ~2.1GB | Faster | Similar or faster | Slight degradation |
-| BnB 8-bit (CUDA) | ~4.2GB | Similar | Similar | Very close to original |
-| BnB 4-bit (CUDA) | ~2.1GB | Faster | Similar | Moderate degradation |
+| BnB 8-bit | ~4.2GB | Similar | Similar | Very close to original |
+| BnB 4-bit | ~2.1GB | Faster | Similar | Moderate degradation |
 
 ## Recommendations
 
@@ -106,9 +113,21 @@ model-quantizer microsoft/Phi-4-mini-instruct --bits 4 --method gptq --output-di
 
 ## Troubleshooting
 
+### GPTQ Device Selection
+
+If you encounter issues with GPTQ quantization, try explicitly specifying the device:
+
+```bash
+# Try CPU device
+model-quantizer microsoft/Phi-4-mini-instruct --method gptq --bits 4 --device cpu
+
+# Try CUDA device if available
+model-quantizer microsoft/Phi-4-mini-instruct --method gptq --bits 4 --device cuda
+```
+
 ### macOS-Specific Issues
 
-If you encounter issues on macOS, try:
+If you encounter other issues on macOS, try:
 
 ```bash
 export PYTORCH_ENABLE_MPS_FALLBACK=1

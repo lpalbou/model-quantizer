@@ -2,7 +2,14 @@
 
 All notable changes to the Model Quantizer project will be documented in this file.
 
-## [0.2.0] - 2023-07-15
+## [0.2.1] - 2025-03-15
+
+### Fixed
+- Restored GPTQ quantization support for CPU devices
+- Removed incorrect device restriction that was blocking CPU usage for GPTQ
+- Improved error handling with more helpful suggestions
+
+## [0.2.0] - 2025-03-15
 
 ### Added
 - PyPI package support with `model-quantizer` now available via pip

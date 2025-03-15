@@ -1,6 +1,13 @@
 # Troubleshooting Guide
 
-This guide provides solutions for common issues encountered when using the Model Quantizer tool.
+This guide provides solutions for common issues encountered when using the Model Quantizer.
+
+## Table of Contents
+- [GPTQ Quantization Issues](#gptq-quantization-issues)
+- [Memory Issues](#memory-issues)
+- [Slow Generation](#slow-generation)
+- [Model Loading Errors](#model-loading-errors)
+- [Compatibility Issues](#compatibility-issues)
 
 ## Platform-Specific Issues
 
@@ -12,7 +19,7 @@ BitsAndBytes quantization is not fully supported on macOS. If you encounter issu
 
 ```bash
 # Use GPTQ instead of BitsAndBytes on macOS
-model-quantizer microsoft/Phi-4-mini-instruct --method gptq --bits 4
+model-quantizer microsoft/Phi-4-mini-instruct --method gptq --bits 4 --device cpu
 ```
 
 The Model Quantizer will automatically detect macOS and warn you if you try to use BitsAndBytes. It will also offer to switch to GPTQ automatically.
@@ -61,7 +68,19 @@ model-quantizer microsoft/Phi-4-mini-instruct --additional-params '{"batch_size"
 
 ## Method-Specific Issues
 
-### GPTQ Issues
+### GPTQ Quantization Issues
+
+#### GPTQ Device Selection
+
+GPTQ quantization works on both CPU and GPU devices. If you encounter issues with one device, try the other:
+
+```bash
+# Try CPU if GPU is causing issues
+model-quantizer microsoft/Phi-4-mini-instruct --method gptq --device cpu
+
+# Try GPU if available and CPU is slow
+model-quantizer microsoft/Phi-4-mini-instruct --method gptq --device cuda
+```
 
 #### GPTQ Calibration Dataset
 
@@ -156,6 +175,106 @@ If you encounter issues publishing to Hugging Face Hub, make sure you have logge
 ```bash
 huggingface-cli login
 ```
+
+## Memory Issues
+
+### Issue
+
+The model fails to load with an out-of-memory error.
+
+### Solutions
+
+1. **Use a Lower Bit Width**
+
+   4-bit quantization uses significantly less memory than 8-bit:
+
+   ```bash
+   model-quantizer your-model --bits 4 --method gptq
+   ```
+
+2. **Use CPU Instead of GPU**
+
+   If your GPU has limited memory, try using CPU:
+
+   ```bash
+   model-quantizer your-model --device cpu
+   ```
+
+3. **Reduce Model Size**
+
+   Consider using a smaller model if the current one is too large for your hardware.
+
+## Slow Generation
+
+### Issue
+
+Text generation is very slow, especially on CPU.
+
+### Solutions
+
+1. **Use a GPU if Available**
+
+   ```bash
+   model-quantizer your-model --device cuda  # or mps for Mac
+   ```
+
+2. **Reduce Generation Parameters**
+
+   When using the chat interface, reduce the maximum tokens:
+
+   ```bash
+   chat-with-model --model_path ./quantized-model --max_new_tokens 100
+   ```
+
+3. **Use a Smaller Model**
+
+   Smaller models (1-3B parameters) generate text much faster than larger ones.
+
+## Model Loading Errors
+
+### Issue
+
+Errors when loading a quantized model.
+
+### Solutions
+
+1. **Check Compatibility**
+
+   Ensure you're using compatible versions of PyTorch, Transformers, and Optimum.
+
+2. **Verify Model Format**
+
+   Make sure the model was quantized with the correct method for your hardware.
+
+3. **Clear Cache**
+
+   Try clearing the Hugging Face cache:
+
+   ```bash
+   rm -rf ~/.cache/huggingface/
+   ```
+
+## Compatibility Issues
+
+### Issue
+
+BitsAndBytes doesn't work on macOS/OSX.
+
+### Solutions
+
+1. **Use GPTQ Instead**
+
+   ```bash
+   model-quantizer your-model --method gptq --device cpu
+   ```
+
+2. **Use a Different Quantization Method**
+
+   Try AWQ if your model supports it:
+
+   ```bash
+   model-quantizer your-model --method awq
+   ```
 
 ## Getting Help
 

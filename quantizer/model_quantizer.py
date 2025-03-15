@@ -227,16 +227,23 @@ class ModelQuantizer:
         # Prepare GPTQ configuration
         gptq_config = self._prepare_gptq_config(self.tokenizer)
         
-        # Load and quantize model
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            device_map="auto" if device == "cuda" else device,
-            quantization_config=gptq_config,
-            torch_dtype=torch.float16,
-            trust_remote_code=True,
-        )
-        
-        logger.info(f"Model quantized successfully with GPTQ ({self.config.bits}-bit)")
+        try:
+            # Load and quantize model
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                device_map="auto" if device == "cuda" else device,
+                quantization_config=gptq_config,
+                torch_dtype=torch.float16,
+                trust_remote_code=True,
+            )
+            
+            logger.info(f"Model quantized successfully with GPTQ ({self.config.bits}-bit)")
+        except Exception as e:
+            logger.error(f"Error quantizing model: {str(e)}")
+            logger.error("If you encounter issues with GPTQ quantization, try:")
+            logger.error("1. Using a different device (--device cpu or --device cuda)")
+            logger.error("2. Using a different quantization method (--method bitsandbytes)")
+            raise
     
     def _quantize_bnb(self, model_name: str, device: str):
         """

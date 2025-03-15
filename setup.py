@@ -11,7 +11,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="model-quantizer",
-    version="0.2.0",
+    version="0.2.1",
     author="Laurent-Philippe Albou",
     author_email="laurent.albou@gmail.com",
     description="A tool for quantizing and saving Hugging Face models",
