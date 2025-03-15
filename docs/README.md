@@ -1,19 +1,59 @@
 # Model Quantizer Documentation
 
-Welcome to the Model Quantizer documentation. This directory contains comprehensive guides and resources to help you quantize, benchmark, and deploy Hugging Face models.
+This repository contains comprehensive documentation for the Model Quantizer tool, which allows you to quantize Hugging Face models to reduce their memory footprint while maintaining most of their performance.
 
-## Available Documentation
+## Core Documentation
 
-### General Guides
+- [General Model Quantization Guide](general_guide.md): A comprehensive guide to quantizing any Hugging Face model
+- [Benchmarking Guide](benchmarking.md): How to benchmark quantized models to evaluate their performance
+- [Publishing Guide](publishing_guide.md): How to publish quantized models to the Hugging Face Hub
+- [Troubleshooting Guide](troubleshooting.md): Solutions to common issues encountered during quantization
 
-- [General Model Quantization Guide](general_guide.md): A comprehensive guide to quantizing any Hugging Face model using the Model Quantizer tool.
-- [Troubleshooting Guide](troubleshooting.md): Solutions for common issues encountered when quantizing models.
-- [Benchmarking Guide](benchmarking.md): How to benchmark quantized models to evaluate performance, memory usage, and output quality.
-- [Publishing Guide](publishing_guide.md): Instructions for publishing your quantized models to the Hugging Face Hub.
+## Example-Specific Documentation
 
-### Model-Specific Guides
+- [Phi-4-mini Quantization Guide](phi4_mini.md): Detailed guide for quantizing the Microsoft Phi-4-mini model
 
-- [Phi-4-Mini Quantization Guide](phi4_mini.md): Specific guide for quantizing the Microsoft Phi-4-mini-instruct model.
+## Core Workflow
+
+The Model Quantizer provides a complete workflow for working with quantized models:
+
+### 1. Quantize
+
+First, quantize your model to reduce its memory footprint:
+
+```bash
+model-quantizer MODEL_NAME --bits 4 --method gptq --output-dir quantized-model
+```
+
+See the [General Model Quantization Guide](general_guide.md) for detailed instructions.
+
+### 2. Benchmark
+
+Next, benchmark your quantized model to evaluate its performance:
+
+```bash
+run-benchmark --original MODEL_NAME --quantized ./quantized-model --device cpu
+```
+
+See the [Benchmarking Guide](benchmarking.md) for detailed instructions.
+
+### 3. Test Interactively
+
+Test your quantized model interactively to verify its quality:
+
+```bash
+chat-with-model --model_path ./quantized-model
+```
+
+### 4. Publish
+
+Finally, publish your quantized model to the Hugging Face Hub:
+
+```bash
+model-quantizer MODEL_NAME --bits 4 --method gptq --output-dir quantized-model --publish --repo-id YOUR_USERNAME/MODEL_NAME-gptq-4bit
+```
+
+See the [Publishing Guide](publishing_guide.md) for detailed instructions.
 
 ## Getting Started
 

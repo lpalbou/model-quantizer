@@ -36,6 +36,15 @@ setup(
         "torch>=2.0.0",
         "transformers>=4.30.0",
         "optimum>=1.12.0",
+        "psutil>=5.9.0",
+        "numpy>=1.20.0",
+        "matplotlib>=3.5.0",
+        "accelerate>=0.20.0",
+        "datasets>=2.10.0",
+        "huggingface_hub>=0.16.0",
+        "tqdm>=4.65.0",
+        "colorama>=0.4.6",
+        "jinja2>=3.0.0",
     ],
     extras_require={
         "dev": [
@@ -50,6 +59,10 @@ setup(
     entry_points={
         "console_scripts": [
             "model-quantizer=quantizer.cli:main",
+            "benchmark-model=benchmark_model:main",
+            "visualize-benchmark=visualize_benchmark:main",
+            "chat-with-model=chat_with_model:main",
+            "run-benchmark=run_benchmark:main_cli",
         ],
     },
 ) 

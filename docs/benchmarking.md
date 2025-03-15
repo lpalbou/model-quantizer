@@ -1,288 +1,282 @@
-# Benchmarking Quantized Models
+# Benchmarking Guide
 
-This guide explains how to benchmark quantized models to evaluate their performance, memory usage, and output quality compared to the original models.
+This guide explains how to benchmark quantized models to evaluate their performance, memory usage, and output quality.
 
-## Why Benchmark?
+## Introduction
 
-Benchmarking is essential to understand the trade-offs between:
-- Memory efficiency
-- Inference speed
-- Output quality
+Benchmarking is a crucial step in the model quantization process. It helps you:
 
-Different quantization methods and bit widths will have varying impacts on these factors, and benchmarking helps you make informed decisions.
+1. Verify that the quantized model maintains acceptable performance
+2. Understand the trade-offs between different quantization methods and bit widths
+3. Make informed decisions about which quantized model to use for your specific use case
+4. Gather metrics to include in your model card when publishing
 
-## Benchmarking Tools
+## Available Benchmarking Tools
 
-The Model Quantizer package includes several tools for benchmarking:
+The Model Quantizer provides several tools for benchmarking:
 
-1. `benchmark_phi4_mini.py`: A script for benchmarking the Phi-4-mini model
-2. `visualize_benchmark.py`: A script for visualizing benchmark results
-3. `compare_memory_usage.py`: A script for comparing memory usage
+1. `benchmark-model`: A comprehensive script for comparing original and quantized models
+2. `visualize-benchmark`: A script for visualizing benchmark results
+3. `run-benchmark`: A shell script that automates the benchmarking and visualization process
 
-These scripts can be adapted for other models as well.
+## Choosing Between run-benchmark and benchmark-model
 
-## Performance Metrics
+The Model Quantizer provides two main tools for benchmarking: `run-benchmark` and `benchmark-model`. Understanding when to use each will help you get the most out of the benchmarking process.
 
-When benchmarking quantized models, consider the following metrics:
+### When to Use run-benchmark
 
-### 1. Inference Speed
+`run-benchmark` is an all-in-one solution that:
+- Runs the benchmark comparing original and quantized models
+- Saves the results to a JSON file
+- Generates a visual HTML report
+- Opens the report (on macOS) or provides the path to the report
 
-Measure the time taken to generate text:
+Use `run-benchmark` when:
+- You want a complete end-to-end benchmarking solution
+- You need visual reports generated automatically
+- You're doing a one-off comparison between models
+- You want a simple, streamlined process
+
+Example use cases:
+```bash
+# Quick comparison between original and quantized models with visual report
+run-benchmark --original microsoft/Phi-4-mini-instruct --quantized ./phi4-mini-gptq-4bit --device cpu --max_tokens 50 --output_dir benchmark_results
+
+# Comparing models for a presentation or documentation
+run-benchmark --original google/gemma-2b --quantized ./gemma-2b-quantized --device cuda --max_tokens 100 --output_dir presentation_benchmarks
+```
+
+### When to Use benchmark-model
+
+`benchmark-model` is a more flexible, lower-level tool that:
+- Runs benchmarks with more customizable parameters
+- Outputs raw benchmark data
+- Can be integrated into custom workflows
+
+Use `benchmark-model` when:
+- You need more granular control over benchmark parameters
+- You want to run multiple benchmarks and analyze the results yourself
+- You're integrating benchmarking into a custom workflow or script
+- You want to compare multiple models or configurations systematically
+- You need to save raw benchmark data for custom analysis
+
+Example use cases:
+```bash
+# Fine-tuning benchmark parameters
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./phi4-mini-gptq-4bit --device cpu --max_new_tokens 100 --temperature 0.7 --top_p 0.9 --output custom_benchmark.json
+
+# Comparing multiple quantization methods
+benchmark-model --original ./phi4-mini-gptq-8bit --quantized ./phi4-mini-gptq-4bit --output gptq_comparison.json
+benchmark-model --original ./phi4-mini-bnb-8bit --quantized ./phi4-mini-bnb-4bit --output bnb_comparison.json
+
+# Batch testing with different prompt sets
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./phi4-mini-gptq-4bit --prompts-file scientific_prompts.json --output scientific_benchmark.json
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./phi4-mini-gptq-4bit --prompts-file creative_prompts.json --output creative_benchmark.json
+
+# Integration into a custom script
+for model in ./models/*; do
+    benchmark-model --original microsoft/Phi-4-mini-instruct --quantized $model --output results/$(basename $model).json
+done
+```
+
+## Basic Usage
+
+### Using the Automated Benchmark Script (Recommended)
+
+The `run-benchmark` script provides a convenient one-step process for benchmarking and visualization:
 
 ```bash
-# Example command to benchmark inference speed
-python examples/benchmark_phi4_mini.py --model-path MODEL_PATH --metric speed
+# Run the complete benchmark process with required parameters
+run-benchmark --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --device cpu --max_tokens 50 --output_dir benchmark_results
 ```
 
-This will measure:
-- Tokens per second
-- Time per token
-- Total generation time
+This script will:
+1. Run the benchmark comparing the original and quantized models
+2. Save the results to a JSON file
+3. Generate a visual HTML report
+4. Open the report (on macOS) or provide the path to the report
 
-### 2. Memory Usage
+### Using the Core Benchmarking Tool Directly
 
-Measure the memory footprint of the model:
+For more control over the benchmarking process, you can use `benchmark-model` directly:
 
 ```bash
-# Example command to benchmark memory usage
-python examples/compare_memory_usage.py --model-paths MODEL_PATH_1 MODEL_PATH_2 --device cuda
+# Basic usage - compare original and quantized models
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --device cpu
+
+# Specify custom prompts
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --prompts-file custom_prompts.json
+
+# Save results to a file
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --output benchmark_results.json
 ```
 
-This will measure:
-- Peak memory usage
-- Memory usage during loading
-- Memory usage during inference
+## Benchmark Metrics
 
-### 3. Output Quality
+The benchmarking tools collect and report several important metrics:
 
-Evaluate the quality of generated text:
+### Memory Usage
+
+- Initial memory: Memory usage before loading the model
+- Min memory: Minimum memory usage during the benchmark
+- Max memory: Maximum memory usage during the benchmark
+- Avg memory: Average memory usage during the benchmark
+- Memory increase: Additional memory used after loading the model
+
+### Loading Performance
+
+- Load time: Time taken to load the model
+
+### Generation Performance
+
+- Prompt tokens: Number of tokens in the input prompts
+- Prompt eval time: Time spent processing input prompts
+- Prompt tokens/sec: Rate of processing input tokens
+- Generated tokens: Number of tokens generated
+- Generation time: Time spent generating tokens
+- Generation tokens/sec: Rate of generating output tokens
+
+## Comparing Multiple Models
+
+You can benchmark multiple models to compare different quantization methods and bit widths:
 
 ```bash
-# Example command to benchmark output quality
-python examples/benchmark_phi4_mini.py --model-path MODEL_PATH --metric quality --prompts-file custom_prompts.json
+# First, benchmark the original model
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized microsoft/Phi-4-mini-instruct --output original_results.json
+
+# Then benchmark a quantized model
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model-gptq-4bit --output gptq_4bit_results.json
+
+# Compare two quantized models
+benchmark-model --original ./quantized-model-gptq-8bit --quantized ./quantized-model-gptq-4bit --output comparison_results.json
 ```
 
-This will evaluate:
-- Perplexity on a test dataset
-- ROUGE scores compared to reference outputs
-- BLEU scores compared to reference outputs
+## Visualizing Benchmark Results
 
-## Setting Up a Benchmark
-
-### 1. Prepare Models
-
-Quantize your model using different methods and bit widths:
+After running benchmarks, you can visualize the results:
 
 ```bash
-# Quantize with GPTQ at 8-bit
-model-quantizer MODEL_NAME --bits 8 --method gptq --output-dir MODEL_NAME-gptq-8bit
+# Generate visual report from benchmark results
+visualize-benchmark --input benchmark_results.json --output_dir benchmark_report
 
-# Quantize with GPTQ at 4-bit
-model-quantizer MODEL_NAME --bits 4 --method gptq --output-dir MODEL_NAME-gptq-4bit
-
-# Quantize with BitsAndBytes at 8-bit
-model-quantizer MODEL_NAME --bits 8 --method bitsandbytes --output-dir MODEL_NAME-bnb-8bit
-
-# Quantize with BitsAndBytes at 4-bit
-model-quantizer MODEL_NAME --bits 4 --method bitsandbytes --output-dir MODEL_NAME-bnb-4bit
+# Open the HTML report
+open benchmark_report/benchmark_report.html
 ```
 
-### 2. Prepare Test Data
+The visualization script generates:
+- An HTML report with detailed metrics
+- Charts comparing memory usage
+- Charts comparing performance metrics
+- Charts comparing performance by prompt category
 
-Create a file with test prompts:
+## Advanced Benchmarking Options
 
-```json
-[
-  {
-    "prompt": "Explain the concept of quantum computing in simple terms.",
-    "reference": "Quantum computing uses quantum bits or qubits that can be both 0 and 1 at the same time, unlike classical bits. This allows quantum computers to process certain types of problems much faster than traditional computers."
-  },
-  {
-    "prompt": "Write a short poem about artificial intelligence.",
-    "reference": "Silicon dreams and neural streams,\nLearning patterns, crafting schemes.\nMind of math, soul of code,\nWalking down a human road."
-  }
-]
-```
+### Customizing Generation Parameters
 
-Save this as `custom_prompts.json`.
-
-### 3. Run Benchmarks
-
-Run benchmarks for each model:
+You can customize the generation parameters used during benchmarking:
 
 ```bash
-# Benchmark original model
-python examples/benchmark_phi4_mini.py --model-path microsoft/Phi-4-mini-instruct --output-file results/original.json
-
-# Benchmark GPTQ 8-bit
-python examples/benchmark_phi4_mini.py --model-path MODEL_NAME-gptq-8bit --output-file results/gptq-8bit.json
-
-# Benchmark GPTQ 4-bit
-python examples/benchmark_phi4_mini.py --model-path MODEL_NAME-gptq-4bit --output-file results/gptq-4bit.json
-
-# Benchmark BitsAndBytes 8-bit
-python examples/benchmark_phi4_mini.py --model-path MODEL_NAME-bnb-8bit --output-file results/bnb-8bit.json
-
-# Benchmark BitsAndBytes 4-bit
-python examples/benchmark_phi4_mini.py --model-path MODEL_NAME-bnb-4bit --output-file results/bnb-4bit.json
-```
-
-### 4. Visualize Results
-
-Visualize the benchmark results:
-
-```bash
-# Visualize speed comparison
-python examples/visualize_benchmark.py --results-files results/*.json --metric speed --output-file results/speed_comparison.png
-
-# Visualize quality comparison
-python examples/visualize_benchmark.py --results-files results/*.json --metric quality --output-file results/quality_comparison.png
-```
-
-## Customizing Benchmarks
-
-### Custom Metrics
-
-You can add custom metrics to your benchmarks:
-
-```python
-def custom_metric(generated_text, reference_text):
-    # Implement your custom metric
-    return score
-
-# Add to benchmark script
-metrics["custom"] = custom_metric
-```
-
-### Custom Generation Parameters
-
-Adjust generation parameters to match your use case:
-
-```bash
-python examples/benchmark_phi4_mini.py --model-path MODEL_PATH --max-new-tokens 100 --temperature 0.7 --top-p 0.9
+# Adjust generation parameters
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --max-new-tokens 100 --temperature 0.7 --top-p 0.9
 ```
 
 ### Batch Processing
 
-For faster benchmarking, use batch processing:
+For models that support it, you can enable batch processing:
 
 ```bash
-python examples/benchmark_phi4_mini.py --model-path MODEL_PATH --batch-size 4
+# Enable batch processing
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --batch-size 4
 ```
 
-## Interpreting Results
+### Custom Prompts
 
-### Speed vs. Quality Trade-off
+You can provide custom prompts for benchmarking:
 
-- Lower bit widths generally provide faster inference but may reduce quality
-- Different quantization methods may have different speed-quality trade-offs
-- Consider your specific use case when interpreting results
+```json
+// custom_prompts.json
+[
+  {
+    "category": "short_factual",
+    "text": "What is the capital of France?"
+  },
+  {
+    "category": "medium_creative",
+    "text": "Write a short poem about artificial intelligence."
+  },
+  {
+    "category": "long_reasoning",
+    "text": "Explain the theory of relativity in detail, covering both special and general relativity. Include the key equations and their implications."
+  }
+]
+```
 
-### Memory Efficiency
+```bash
+# Use custom prompts
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --prompts-file custom_prompts.json
+```
 
-- Lower bit widths significantly reduce memory usage
-- Some methods may have overhead that reduces memory savings
-- Consider both loading and inference memory usage
+## Interpreting Benchmark Results
 
-### Hardware Considerations
+When interpreting benchmark results, consider the following:
 
-- Results may vary significantly across different hardware
-- CUDA devices may show different patterns than CPU or MPS
-- Always benchmark on the target hardware
+### Memory Usage
 
-## Example Benchmark Report
+- **Memory reduction**: Quantized models should show significant memory reduction compared to the original model
+- **Expected reduction**: 
+  - 8-bit quantization: ~50% reduction
+  - 4-bit quantization: ~75% reduction
+- **Actual vs. theoretical**: Actual memory usage may differ from theoretical calculations due to implementation details
 
-Here's an example of how to structure a benchmark report:
+### Speed
 
-```markdown
-# Benchmark Report: MODEL_NAME
+- **Loading time**: Quantized models may load faster or slower than the original model
+- **Inference speed**: Quantized models often have different inference speeds:
+  - 4-bit models are sometimes faster than 8-bit models due to reduced memory bandwidth requirements
+  - CPU vs. GPU performance can vary significantly
 
-## Test Environment
-- Hardware: NVIDIA RTX 3090 / Apple M1 Pro / Intel i9-12900K
-- Operating System: Ubuntu 22.04 / macOS 13.0 / Windows 11
-- PyTorch Version: 2.0.1
-- CUDA Version: 11.7
+### Quality
 
-## Models Tested
-- Original (FP16)
-- GPTQ 8-bit
-- GPTQ 4-bit
-- BitsAndBytes 8-bit
-- BitsAndBytes 4-bit
+- **Output quality**: Quantized models may show slight degradation in output quality
+- **Perplexity**: Higher perplexity indicates lower quality
+- **Human evaluation**: Always perform human evaluation of outputs for critical use cases
 
-## Speed Benchmark
-| Model | Tokens/Second | Time/Token (ms) | Total Time (s) |
-| ----- | ------------- | --------------- | -------------- |
-| Original | 10.5 | 95.2 | 9.52 |
-| GPTQ 8-bit | 12.3 | 81.3 | 8.13 |
-| GPTQ 4-bit | 15.7 | 63.7 | 6.37 |
-| BnB 8-bit | 11.8 | 84.7 | 8.47 |
-| BnB 4-bit | 14.2 | 70.4 | 7.04 |
+## Device-Specific Benchmarking
 
-## Memory Usage
-| Model | Loading (GB) | Inference (GB) | Peak (GB) |
-| ----- | ------------ | -------------- | --------- |
-| Original | 7.6 | 7.8 | 8.1 |
-| GPTQ 8-bit | 3.8 | 4.0 | 4.2 |
-| GPTQ 4-bit | 1.9 | 2.1 | 2.3 |
-| BnB 8-bit | 3.8 | 4.1 | 4.3 |
-| BnB 4-bit | 1.9 | 2.2 | 2.4 |
+You can benchmark on different devices to understand performance characteristics:
 
-## Quality Metrics
-| Model | Perplexity | ROUGE-L | BLEU |
-| ----- | ---------- | ------- | ---- |
-| Original | 3.21 | 0.85 | 0.72 |
-| GPTQ 8-bit | 3.25 | 0.84 | 0.71 |
-| GPTQ 4-bit | 3.42 | 0.81 | 0.68 |
-| BnB 8-bit | 3.27 | 0.83 | 0.70 |
-| BnB 4-bit | 3.45 | 0.80 | 0.67 |
+```bash
+# Benchmark on CPU
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --device cpu
+
+# Benchmark on CUDA (if available)
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --device cuda
+
+# Benchmark on MPS (Apple Silicon)
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --device mps
+```
+
+## Stress Testing
+
+For critical applications, consider stress testing with complex prompts and longer outputs:
+
+```bash
+# Stress test with complex prompts and longer outputs
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --max-new-tokens 1024 --prompts-file complex_prompts.json
+```
+
+## Saving and Sharing Benchmark Results
+
+You can save benchmark results to share with others or include in your model card:
+
+```bash
+# Save benchmark results with a timestamp
+DATE=$(date +"%Y%m%d_%H%M%S")
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --output benchmark_$DATE.json
+```
 
 ## Conclusion
-- GPTQ 4-bit provides the best balance of speed, memory efficiency, and quality
-- BitsAndBytes 8-bit is recommended for CUDA devices where quality is important
-- Original model is only recommended when memory is not a constraint
-```
 
-## Advanced Benchmarking
+Benchmarking is an essential step in the model quantization process. It helps you understand the trade-offs between different quantization methods and bit widths, and make informed decisions about which quantized model to use for your specific use case.
 
-### Multi-Device Testing
-
-Test across different devices:
-
-```bash
-# Test on CPU
-python examples/benchmark_phi4_mini.py --model-path MODEL_PATH --device cpu
-
-# Test on CUDA
-python examples/benchmark_phi4_mini.py --model-path MODEL_PATH --device cuda
-
-# Test on MPS (Apple Silicon)
-python examples/benchmark_phi4_mini.py --model-path MODEL_PATH --device mps
-```
-
-### Stress Testing
-
-Test with longer sequences and more complex prompts:
-
-```bash
-python examples/benchmark_phi4_mini.py --model-path MODEL_PATH --max-new-tokens 1024 --prompts-file complex_prompts.json
-```
-
-### Continuous Benchmarking
-
-Set up continuous benchmarking to track performance over time:
-
-```bash
-# Create a benchmark script
-#!/bin/bash
-DATE=$(date +%Y-%m-%d)
-python examples/benchmark_phi4_mini.py --model-path MODEL_PATH --output-file results/benchmark_$DATE.json
-```
-
-## References
-
-- [Hugging Face Transformers Documentation](https://huggingface.co/docs/transformers/index)
-- [GPTQ Paper](https://arxiv.org/abs/2210.17323)
-- [AWQ Paper](https://arxiv.org/abs/2306.00978)
-- [BitsAndBytes Documentation](https://github.com/TimDettmers/bitsandbytes)
-- [Model Quantizer Documentation](https://github.com/lpalbou/model-quantizer) 
+Always benchmark your quantized models before publishing them to ensure they meet your performance and quality requirements. 

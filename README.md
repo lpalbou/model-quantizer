@@ -2,6 +2,9 @@
 
 A tool for quantizing and saving Hugging Face models, with comprehensive benchmarking and testing capabilities.
 
+[![PyPI version](https://badge.fury.io/py/model-quantizer.svg)](https://badge.fury.io/py/model-quantizer)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## Why Model Quantizer?
 
 - **Cross-Platform Compatibility**: BitsAndBytes doesn't work on macOS/OSX, but Hugging Face GPTQ implementation does
@@ -26,7 +29,9 @@ A tool for quantizing and saving Hugging Face models, with comprehensive benchma
 - Comprehensive benchmarking tools to compare original and quantized models
 - Interactive testing capabilities to verify model quality
 
-## Workflow
+## Core Workflow
+
+The Model Quantizer provides a complete workflow for working with quantized models:
 
 1. **Quantize**: Convert your model to a more efficient format
 2. **Benchmark**: Compare performance metrics between original and quantized versions
@@ -79,7 +84,7 @@ from quantizer import ModelQuantizer, QuantizationConfig
 config = QuantizationConfig(
     bits=4,  # 4-bit recommended for GPTQ
     method="gptq",
-    output_dir="phi-4-mini-quantized",
+    output_dir="quantized-model",
     device="auto"
 )
 
@@ -94,8 +99,8 @@ quantizer.save()
 
 # Load quantized model
 from transformers import AutoModelForCausalLM, AutoTokenizer
-model = AutoModelForCausalLM.from_pretrained("phi-4-mini-quantized", device_map="auto")
-tokenizer = AutoTokenizer.from_pretrained("phi-4-mini-quantized")
+model = AutoModelForCausalLM.from_pretrained("quantized-model", device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("quantized-model")
 ```
 
 ## Configuration Options
@@ -120,13 +125,57 @@ The package includes several tools to help you benchmark and test your quantized
 
 Benchmarking is a crucial step before publishing your quantized model. It helps you verify that the quantization process maintained acceptable performance while reducing memory usage.
 
+#### Choosing Between Benchmarking Tools
+
+The Model Quantizer provides two main benchmarking tools:
+
+##### run-benchmark
+
+`run-benchmark` is an all-in-one solution that:
+- Runs the benchmark comparing original and quantized models
+- Saves the results to a JSON file
+- Generates a visual HTML report
+- Opens the report (on macOS) or provides the path to the report
+
+Use `run-benchmark` when:
+- You want a complete end-to-end benchmarking solution
+- You need visual reports generated automatically
+- You're doing a one-off comparison between models
+- You want a simple, streamlined process
+
+```bash
+# Quick comparison with visual report
+run-benchmark --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --device cpu --max_tokens 50 --output_dir benchmark_results
+```
+
+##### benchmark-model
+
+`benchmark-model` is a more flexible, lower-level tool that:
+- Runs benchmarks with more customizable parameters
+- Outputs raw benchmark data
+- Can be integrated into custom workflows
+
+Use `benchmark-model` when:
+- You need more granular control over benchmark parameters
+- You want to run multiple benchmarks and analyze the results yourself
+- You're integrating benchmarking into a custom workflow or script
+- You want to compare multiple models or configurations systematically
+
+```bash
+# Fine-tuning benchmark parameters
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --device cpu --max_new_tokens 100 --temperature 0.7 --top_p 0.9 --output custom_benchmark.json
+
+# Batch testing with different prompt sets
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --prompts-file scientific_prompts.json --output scientific_benchmark.json
+```
+
 #### Using the Automated Benchmark Script (Recommended)
 
-The `run_benchmark.sh` script provides a convenient one-step process for benchmarking and visualization:
+The `run-benchmark` script provides a convenient one-step process for benchmarking and visualization:
 
 ```bash
 # Run the complete benchmark process with required parameters
-./run_benchmark.sh --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --device cpu --max_tokens 50 --output_dir benchmark_results
+run-benchmark --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --device cpu --max_tokens 50 --output_dir benchmark_results
 ```
 
 **Available Options:**
@@ -145,23 +194,23 @@ The script automatically:
 
 #### Using the Core Benchmarking Tool Directly
 
-For more control over the benchmarking process, you can use `benchmark_your_model.py` directly:
+For more control over the benchmarking process, you can use `benchmark-model` directly:
 
 ```bash
 # Basic usage - compare original and quantized models
-python benchmark_your_model.py --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --device cpu
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --device cpu
 
 # Specify maximum tokens to generate
-python benchmark_your_model.py --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --max_new_tokens 100
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --max_new_tokens 100
 
 # Save benchmark results to a file
-python benchmark_your_model.py --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --output benchmark_results.json
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --output benchmark_results.json
 
 # Run with reduced output verbosity
-python benchmark_your_model.py --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --quiet
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized qmodels/phi4-mini-4bit --quiet
 
 # Compare two different quantized models
-python benchmark_your_model.py --original qmodels/phi4-mini-8bit --quantized qmodels/phi4-mini-4bit --device cpu
+benchmark-model --original qmodels/phi4-mini-8bit --quantized qmodels/phi4-mini-4bit --device cpu
 ```
 
 **Key Parameters:**
@@ -180,7 +229,7 @@ After running the benchmark, you can generate visual reports from the results:
 
 ```bash
 # Generate visual report from benchmark results
-python visualize_benchmark.py --input benchmark_results.json --output_dir benchmark_report
+visualize-benchmark --input benchmark_results.json --output_dir benchmark_report
 
 # Open the HTML report
 open benchmark_report/benchmark_report.html
@@ -197,19 +246,16 @@ The visualization script generates:
 Before publishing, it's important to test your model interactively to ensure it maintains response quality after quantization:
 
 ```bash
-# Chat with your quantized model
-python chat_with_model.py --model_path qmodels/phi4-mini-4bit --device cpu --max_new_tokens 256
+# Chat with the model
+chat-with-model --model_path qmodels/phi4-mini-4bit --device cpu --max_new_tokens 256
 
 # Use a custom system prompt
-python chat_with_model.py --model_path qmodels/phi4-mini-4bit --system_prompt "You are a helpful AI assistant specialized in science."
-
-# Save chat history for later review
-# (Type 'save' during the chat session)
+chat-with-model --model_path qmodels/phi4-mini-4bit --system_prompt "You are a helpful AI assistant specialized in science."
 ```
 
 ## Benchmark Metrics
 
-The `benchmark_your_model.py` script provides comprehensive metrics comparing original and quantized models:
+The `benchmark-model` script provides comprehensive metrics comparing original and quantized models:
 
 ### Memory Usage
 - Initial memory: Memory usage before loading the model
@@ -252,6 +298,23 @@ Comprehensive documentation is available in the [docs](docs) directory:
 
 See the [examples](examples) directory for more examples.
 
+### Example: Quantizing Any Model
+
+The `examples/quantize_example.py` script demonstrates how to quantize any Hugging Face model:
+
+```bash
+# Quantize a model with default settings (Phi-4-mini with GPTQ 4-bit)
+python examples/quantize_example.py
+
+# Quantize a specific model
+python examples/quantize_example.py --model facebook/opt-350m --method gptq --bits 4
+
+# Publish to Hugging Face Hub
+python examples/quantize_example.py --model facebook/opt-350m --publish --repo-id your-username/opt-350m-gptq-4bit
+```
+
+The script provides a complete workflow for quantizing, benchmarking, testing, and publishing models.
+
 ### Example: Quantizing Phi-4-mini
 
 The Phi-4-mini model from Microsoft is a great example of a model that benefits from quantization. At 3.8B parameters, it can be quantized to reduce memory usage:
@@ -260,68 +323,29 @@ The Phi-4-mini model from Microsoft is a great example of a model that benefits 
 - 8-bit quantized: Theoretical ~3.8 GB memory usage (50% reduction)
 - 4-bit quantized: Theoretical ~1.9 GB memory usage (75% reduction)
 
-**Note**: These are theoretical estimates based on bit reduction. Actual memory usage may vary and should be benchmarked for your specific hardware and use case. The quantized models produced by this tool use the Hugging Face GPTQ format, which is different from other formats like GGUF used in some repositories.
+**Note**: These are theoretical estimates based on bit reduction. Actual memory usage may vary and should be benchmarked for your specific hardware and use case. The quantized models produced by this tool use the Hugging Face GPTQ format, which is different from other formats like GGUF.
 
 Our benchmarks with the Phi-4-mini model show:
 
-1. **8-bit Quantized Model** (`qmodels/phi4-mini-8bit`):
+1. **8-bit Quantized Model**:
    - Theoretical memory reduction: 50% of original model
-   - Actual memory increase during loading: ~0.08 GB
    - Loading time: ~0.91 seconds
    - Generation time: Slower than 4-bit model
 
-2. **4-bit Quantized Model** (`qmodels/phi4-mini-4bit`):
+2. **4-bit Quantized Model**:
    - Theoretical memory reduction: 75% of original model
-   - Actual memory increase during loading: ~0.24 GB
    - Loading time: ~1.50 seconds
    - Generation time: Faster than 8-bit model
 
 ```bash
 # Quantize using GPTQ with 4-bit precision (recommended)
-python examples/quantize_phi4_mini.py --method gptq --bits 4 --output_dir ./quantized-models/phi4-mini-gptq-4bit
+python examples/quantize_example.py --model microsoft/Phi-4-mini-instruct --method gptq --bits 4 --output-dir ./quantized-models/phi4-mini-gptq-4bit
 
 # Quantize using BitsAndBytes with 8-bit precision
-python examples/quantize_phi4_mini.py --method bnb --bits 8 --output_dir ./quantized-models/phi4-mini-bnb-8bit
+python examples/quantize_example.py --model microsoft/Phi-4-mini-instruct --method bnb --bits 8 --output-dir ./quantized-models/phi4-mini-bnb-8bit
 ```
 
 See the [Phi-4-Mini Quantization Guide](docs/phi4_mini.md) for more details.
-
-### GGUF Model Support
-
-In addition to the Hugging Face quantization methods, we now support using pre-quantized GGUF models with our server implementation:
-
-- **Memory Efficiency**: Our testing shows that a 6-bit quantized GGUF model (Q6_K_L) uses approximately 3.57 GB of memory when loaded for Phi-4-Mini and 4.54 GB for the full Phi-4 model
-- **Server Implementation**: The server provides a simple REST API for generating text, with endpoints for health checks, text generation, and graceful shutdown
-- **Current Limitations**: The server implementation is still in development and may experience stability issues during text generation with certain model configurations
-
-```bash
-# Run the Phi-4-Mini server with a 6-bit GGUF model
-python -m system.llm_server.phi4_mini_server
-
-# For the full Phi-4 model
-python -m system.llm_server.phi4_server
-```
-
-When using GGUF models, ensure you have the correct model filenames configured in the server implementation:
-- For Phi-4-Mini: `phi-4-mini-instruct-Q6_K_L.gguf`
-- For Phi-4: `phi-4-Q6_K_L.gguf`
-
-### Other Example Scripts
-
-The examples directory contains several scripts to help you get started:
-
-- `quantize_phi4_mini.py`: Script to quantize the Microsoft Phi-4-mini-instruct model
-- `benchmark_your_model.py`: Comprehensive script to compare original and quantized models
-- `visualize_benchmark.py`: Script to generate visual reports from benchmark results
-- `run_benchmark.sh`: Shell script to automate the benchmark and visualization process
-- `chat_with_model.py`: Interactive chat script for testing model quality and performance
-- `update_phi4_mini_server.py`: Script to update a server to use a quantized model
-- `test_quantized_phi4_mini_server.sh`: Test script to verify the updated server
-- `use_quantized_phi4_mini.py`: Script to demonstrate loading and using a quantized model
-- `benchmark_phi4_mini.py`: Script to benchmark and compare different quantization methods
-- `compare_memory_usage.py`: Script to compare the memory usage of different quantization methods
-
-For more details, see the [examples README](examples/README.md).
 
 ## Notes
 
