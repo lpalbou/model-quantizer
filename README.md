@@ -2,7 +2,7 @@
 
 A tool for quantizing and saving Hugging Face models, with comprehensive benchmarking and testing capabilities.
 
-[![PyPI version](https://badge.fury.io/py/model-quantizer.svg)](https://badge.fury.io/py/model-quantizer)
+[![PyPI version](https://img.shields.io/pypi/v/model-quantizer)](https://pypi.org/project/model-quantizer/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **GitHub**: [https://github.com/lpalbou/model-quantizer](https://github.com/lpalbou/model-quantizer)  
