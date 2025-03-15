@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Visualize benchmark results from benchmark_your_model.py.
+Visualize benchmark results from benchmark_model.py.
 Creates HTML reports with charts comparing original and quantized models.
 """
 

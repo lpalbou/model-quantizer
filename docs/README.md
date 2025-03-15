@@ -6,7 +6,7 @@ This repository contains comprehensive documentation for the Model Quantizer too
 
 - [General Guide](general_guide.md): Comprehensive guide to quantizing Hugging Face models
 - [Benchmarking Guide](benchmarking.md): How to benchmark and compare quantized models
-- [Publishing Guide](publishing.md): How to publish quantized models to Hugging Face Hub, including automatic model card generation
+- [Publishing Guide](publishing_guide.md): How to publish quantized models to Hugging Face Hub, including automatic model card generation
 - [Chat Guide](chat_guide.md): How to interactively test your quantized models
 - [Troubleshooting Guide](troubleshooting.md): Solutions to common issues encountered during quantization
 

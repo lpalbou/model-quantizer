@@ -7,7 +7,7 @@ This comprehensive guide provides detailed instructions for publishing quantized
 2. [Prerequisites](#prerequisites)
 3. [Publishing Methods](#publishing-methods)
 4. [Preparing Your Model for Publication](#preparing-your-model-for-publication)
-5. [Creating an Effective Model Card](#creating-an-effective-model-card)
+5. [Model Cards](#model-cards)
 6. [Legal and Ethical Considerations](#legal-and-ethical-considerations)
 7. [Best Practices for Model Organization](#best-practices-for-model-organization)
 8. [Community Engagement and Maintenance](#community-engagement-and-maintenance)
@@ -91,7 +91,13 @@ quantizer.publish_to_hub(
 
 ### 3. Manual Publishing
 
-If you prefer more control over the publishing process, you can manually publish your model using the steps outlined in the [Technical Implementation](#technical-implementation) section.
+If you have already quantized a model and want to publish it manually, you can use the Hugging Face Hub CLI:
+
+```bash
+huggingface-cli upload YOUR_USERNAME/phi-4-mini-gptq-4bit ./quantized-model
+```
+
+For more control over the publishing process, you can follow the steps outlined in the [Technical Implementation](#technical-implementation) section.
 
 ## Preparing Your Model for Publication
 
@@ -101,7 +107,7 @@ Before publishing, thoroughly evaluate your quantized model to ensure it meets q
 
 ```bash
 # Run the benchmark script on your quantized model
-python benchmark_your_model.py --original "microsoft/Phi-4-mini-instruct" --quantized "your-quantized-model-path" --device cpu
+run-benchmark --original "microsoft/Phi-4-mini-instruct" --quantized "your-quantized-model-path" --device cpu --output_dir benchmark_results
 ```
 
 Important metrics to document:
@@ -135,11 +141,141 @@ outputs = model.generate(**inputs, max_new_tokens=20)
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 ```
 
-## Creating an Effective Model Card
+## Model Cards
 
-A comprehensive model card is essential for users to understand your quantized model. Create a `README.md` file with the following sections:
+### Automatic Model Card Generation
 
-### Essential Components for Quantized Models
+When you quantize a model using Model Quantizer, a comprehensive model card is automatically generated and saved as `README.md` in the output directory. This model card includes:
+
+- Basic model information (original model, quantization method, bit width)
+- Quantization parameters (group size, symmetric quantization, etc.)
+- Estimated memory usage compared to the original model
+- Usage examples
+- License information
+
+### Enhancing Model Cards with Benchmark Results
+
+To add benchmark results to your model card, you can run the benchmark with the `--update-model-card` flag:
+
+```bash
+benchmark-model --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --device cpu --max_new_tokens 100 --output ./benchmark_results.json --update-model-card
+```
+
+Or when using the all-in-one benchmark tool:
+
+```bash
+run-benchmark --original microsoft/Phi-4-mini-instruct --quantized ./quantized-model --device cpu --max_tokens 100 --output_dir ./benchmark_results --update-model-card
+```
+
+This will automatically update the model card with:
+
+- Memory usage metrics
+- Loading time
+- Generation speed
+- Comparison with the original model
+- Quality metrics (if available)
+
+### Model Card Example
+
+Here's an example of what the automatically generated model card looks like:
+
+```markdown
+---
+language:
+- en
+tags:
+- quantized
+- GPTQ
+- 4bit
+license: mit
+datasets:
+- c4
+---
+
+# phi-4-mini-gptq-4bit
+
+This is a 4-bit quantized version of [microsoft/phi-4-mini-instruct](https://huggingface.co/microsoft/phi-4-mini-instruct) using the gptq quantization method.
+
+## Model Details
+
+- **Original Model:** [microsoft/phi-4-mini-instruct](https://huggingface.co/microsoft/phi-4-mini-instruct)
+- **Quantization Method:** gptq (4-bit)
+- **Hugging Face Transformers Compatible:** Yes
+- **Quantized Date:** 2023-06-15
+- **Quantization Parameters:**
+  - Group Size: 128
+  - Bits: 4
+  - Descending Activation Order: False
+  - Symmetric: True
+
+## Performance Metrics
+
+### Benchmark Results
+
+#### Memory Metrics
+| Metric | Value |
+| ------ | ----- |
+| Initial Memory | 0.45 GB |
+| Min Memory | 0.45 GB |
+| Max Memory | 2.10 GB |
+| Avg Memory | 1.85 GB |
+
+#### Performance Metrics
+| Metric | Value |
+| ------ | ----- |
+| Load Time | 3.25 s |
+| Prompt Tokens Per Sec | 45.32 tokens/s |
+| Generation Tokens Per Sec | 12.75 tokens/s |
+
+#### Model Comparison
+| Model | Memory | Load Time | Generation Speed | Quality |
+| ----- | ------ | --------- | ---------------- | ------- |
+| Original | 4.50 GB | 5.32 s | 10.45 tokens/s | Baseline |
+| Quantized | 2.10 GB | 3.25 s | 12.75 tokens/s | See metrics |
+
+### Memory Usage
+- Original Model (FP16): ~8.4 GB
+- Quantized Model (4-bit): ~2.1 GB
+- Memory Reduction: ~75.0%
+
+### Speed
+- Load Time: 3.25 s
+- Generation Speed: 12.75 tokens/sec
+
+## Usage
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+# Load the quantized model
+model = AutoModelForCausalLM.from_pretrained("YOUR_USERNAME/phi-4-mini-gptq-4bit", device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("YOUR_USERNAME/phi-4-mini-gptq-4bit")
+
+# Generate text
+prompt = "Your prompt here"
+inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+outputs = model.generate(**inputs, max_new_tokens=100)
+print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+```
+
+## Quantization Process
+
+This model was quantized using the [Model Quantizer](https://github.com/lpalbou/model-quantizer) tool with the following command:
+
+```bash
+model-quantizer microsoft/phi-4-mini-instruct --bits 4 --method gptq --output-dir ./quantized-model
+```
+
+## License
+
+This model is licensed under the same license as the original model: mit.
+```
+
+### Creating a Custom Model Card
+
+If you prefer to create a custom model card, you can follow the guidelines below to ensure it includes all necessary information.
+
+#### Essential Components for Quantized Models
 
 - **Model Description**: Clearly state it's a quantized version of an existing model
 - **Quantization Details**: 
@@ -164,76 +300,6 @@ A comprehensive model card is essential for users to understand your quantized m
   - Specific use cases where performance might be affected
 - **Citation Information**:
   - How to cite both your quantized model and the original model
-
-### Example Model Card Structure
-
-```markdown
----
-language: en
-license: [original model license]
-tags:
-  - quantized
-  - [original model tags]
-  - [quantization method, e.g., gptq, bitsandbytes, awq]
-  - [bit width, e.g., 4bit, 8bit]
-datasets:
-  - [datasets used for evaluation]
----
-
-# [Model Name] Quantized ([Quantization Method], [Bit Width])
-
-This is a quantized version of the [original model name](link to original model) using [quantization method] at [bit width] precision.
-
-## Model Description
-
-[Brief description of the original model]
-
-## Quantization Details
-
-- **Original Model**: [original model name with link]
-- **Quantization Method**: [method used, e.g., GPTQ, BitsAndBytes, AWQ]
-- **Bit Width**: [bit width, e.g., 4-bit, 8-bit]
-- **Group Size**: [group size used, if applicable]
-- **Quantization Tool**: [Model Quantizer](https://github.com/lpalbou/model-quantizer)
-
-## Performance Comparison
-
-| Metric | Original Model | Quantized Model |
-| ------ | -------------- | --------------- |
-| Memory Usage | [value] GB | [value] GB |
-| Loading Time | [value] s | [value] s |
-| Inference Speed | [value] tokens/s | [value] tokens/s |
-| [Quality Metric] | [value] | [value] |
-
-## Hardware Requirements
-
-- **Minimum RAM**: [value] GB
-- **Recommended VRAM**: [value] GB
-- **Supported Devices**: [list of tested devices]
-
-## Usage
-
-```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-# Load the quantized model
-model = AutoModelForCausalLM.from_pretrained("YOUR_HF_USERNAME/MODEL_NAME", device_map="auto")
-tokenizer = AutoTokenizer.from_pretrained("YOUR_HF_USERNAME/MODEL_NAME")
-
-# Generate text
-inputs = tokenizer("Your prompt here", return_tensors="pt")
-outputs = model.generate(**inputs, max_new_tokens=100)
-print(tokenizer.decode(outputs[0], skip_special_tokens=True))
-```
-
-## Limitations
-
-[Discuss any limitations or quality degradation observed with the quantized model]
-
-## Citation
-
-[Include citation for the original model]
-```
 
 ## Legal and Ethical Considerations
 
@@ -423,122 +489,18 @@ model-quantizer microsoft/Phi-4-mini-instruct --bits 4 --method gptq --output-di
 Compare the performance of the original and quantized models:
 
 ```bash
-python benchmark_your_model.py --original microsoft/Phi-4-mini-instruct --quantized phi-4-mini-quantized --device cpu
+run-benchmark --original microsoft/Phi-4-mini-instruct --quantized phi-4-mini-quantized --device cpu --output_dir benchmark_results --update-model-card
 ```
 
-Document the results for inclusion in your model card.
+The benchmark results will be automatically added to your model card.
 
-### Step 4: Create a Comprehensive Model Card
+### Step 4: Publish to Hugging Face
 
-Create a `README.md` file with detailed information about your quantized model:
-
-```markdown
----
-language: en
-license: microsoft-research-license
-tags:
-  - quantized
-  - gptq
-  - 4bit
-  - phi-4
-  - microsoft
----
-
-# Phi-4-mini Quantized (GPTQ 4-bit)
-
-This repository contains a 4-bit quantized version of [Microsoft's Phi-4-mini](https://huggingface.co/microsoft/Phi-4-mini-instruct) optimized for efficient inference.
-
-## Model Description
-
-Phi-4-mini is a compact yet powerful language model released by Microsoft Research. This repository provides an optimized version using GPTQ quantization to reduce memory requirements while maintaining performance.
-
-## Quantization Details
-
-- **Original Model**: [microsoft/Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct)
-- **Quantization Method**: GPTQ
-- **Bit Width**: 4-bit
-- **Group Size**: 128
-- **Quantization Tool**: [Model Quantizer](https://github.com/lpalbou/model-quantizer)
-
-## Performance Comparison
-
-| Metric | Original | 4-bit Quantized |
-|--------|----------|----------------|
-| Memory Usage | ~7.6 GB | ~1.9 GB |
-| Loading Time | X.XX s | Y.YY s |
-| Generation Speed | XX.X tokens/s | YY.Y tokens/s |
-
-## Hardware Requirements
-
-- **Minimum RAM**: 4 GB
-- **Recommended VRAM**: 2 GB
-- **Supported Devices**: CPU, CUDA GPUs, MPS (Apple Silicon)
-
-## Usage
-
-```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-# Load 4-bit quantized model
-model = AutoModelForCausalLM.from_pretrained(
-    "your-username/phi-4-mini-gptq-4bit",
-    device_map="auto"
-)
-tokenizer = AutoTokenizer.from_pretrained("your-username/phi-4-mini-gptq-4bit")
-
-# Generate text
-prompt = "Explain quantum computing in simple terms:"
-inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-outputs = model.generate(**inputs, max_length=200)
-print(tokenizer.decode(outputs[0], skip_special_tokens=True))
+```bash
+model-quantizer microsoft/Phi-4-mini-instruct --bits 4 --method gptq --publish --repo-id "your-username/phi-4-mini-gptq-4bit"
 ```
 
-## Format Clarification
-
-This quantized model uses the Hugging Face GPTQ format, which is different from other quantization formats like GGUF used by llama.cpp. This model is designed to be used with the Hugging Face Transformers library.
-
-## Limitations
-
-- The 4-bit quantization may result in slight quality degradation for complex reasoning tasks
-- Performance may vary depending on hardware and specific use cases
-- [Any other limitations observed during testing]
-
-## License
-
-This model is subject to the [Microsoft Research License](https://huggingface.co/microsoft/Phi-4-mini-instruct/blob/main/LICENSE). This is a quantized version of the original model created by Microsoft.
-
-## Citation
-
-If you use this model, please cite both the original Microsoft Phi-4-mini model and this quantized version.
-```
-
-### Step 5: Publish to Hugging Face
-
-```python
-from quantizer import ModelQuantizer, QuantizationConfig
-
-# Create configuration
-config = QuantizationConfig(
-    bits=4,
-    method="gptq",
-    output_dir="phi-4-mini-quantized"
-)
-
-# Create quantizer
-quantizer = ModelQuantizer(config)
-
-# Quantize model
-model, tokenizer = quantizer.quantize("microsoft/Phi-4-mini-instruct")
-
-# Publish to Hugging Face Hub
-quantizer.publish_to_hub(
-    repo_id="your-username/phi-4-mini-gptq-4bit",
-    private=False,
-    commit_message="Upload 4-bit quantized Phi-4-mini model"
-)
-```
-
-### Step 6: Verify and Engage
+### Step 5: Verify and Engage
 
 After publishing:
 1. Verify all files were uploaded correctly
@@ -553,4 +515,5 @@ After publishing:
 - [Hugging Face CLI Documentation](https://huggingface.co/docs/huggingface_hub/guides/cli)
 - [Transformers Documentation](https://huggingface.co/docs/transformers/index)
 - [Hugging Face GPTQ Documentation](https://huggingface.co/docs/transformers/en/quantization/gptq)
-- [Model Quantizer Documentation](https://github.com/lpalbou/model-quantizer) 
+- [Model Quantizer Documentation](https://github.com/lpalbou/model-quantizer)
+- [Model Quantizer PyPI Package](https://pypi.org/project/model-quantizer/) 

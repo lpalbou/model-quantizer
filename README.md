@@ -40,7 +40,7 @@ The Model Quantizer provides a complete workflow for working with quantized mode
 
 ## Installation
 
-### From PyPI
+### From PyPI (Recommended)
 
 ```bash
 pip install model-quantizer
@@ -393,4 +393,4 @@ run-benchmark --original microsoft/phi-4-mini-instruct --quantized ./quantized-m
 
 This will automatically update the model card with memory usage, loading time, generation speed, and comparison with the original model.
 
-For more details, see the [Publishing Guide](docs/publishing.md).
+For more details, see the [Publishing Guide](docs/publishing_guide.md).

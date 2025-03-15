@@ -138,7 +138,9 @@ def main():
     
     # Print benchmark instructions
     print("\nTo benchmark the quantized model:")
-    print(f"python benchmark_your_model.py --original {args.model} --quantized {args.output_dir} --device {args.device}")
+    print(f"python benchmark_model.py --original {args.model} --quantized {args.output_dir} --device {args.device}")
+    print("Or use the all-in-one benchmark tool:")
+    print(f"python run_benchmark.py --original {args.model} --quantized {args.output_dir} --device {args.device} --max_tokens 50 --output_dir benchmark_results")
     
     # Print interactive testing instructions
     print("\nTo interactively test the quantized model:")
