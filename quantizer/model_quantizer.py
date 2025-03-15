@@ -228,6 +228,19 @@ class ModelQuantizer:
         gptq_config = self._prepare_gptq_config(self.tokenizer)
         
         try:
+            # Check if gptqmodel is actually installed when transformers reports it's available
+            import transformers
+            if transformers.utils.is_gptqmodel_available():
+                try:
+                    import gptqmodel
+                    logger.info("GPTQModel package is properly installed.")
+                except ImportError:
+                    logger.warning("Transformers reports gptqmodel is available, but it cannot be imported.")
+                    logger.warning("This is likely a false positive.")
+                    logger.error("Please install gptqmodel manually with: pip install gptqmodel>=2.1.0")
+                    raise ImportError("gptqmodel package is required for GPTQ quantization but not installed. "
+                                     "Please install it with: pip install gptqmodel>=2.1.0")
+            
             # Load and quantize model
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_name,
@@ -243,6 +256,7 @@ class ModelQuantizer:
             logger.error("If you encounter issues with GPTQ quantization, try:")
             logger.error("1. Using a different device (--device cpu or --device cuda)")
             logger.error("2. Using a different quantization method (--method bitsandbytes)")
+            logger.error("3. Installing gptqmodel: pip install gptqmodel>=2.1.0")
             raise
     
     def _quantize_bnb(self, model_name: str, device: str):

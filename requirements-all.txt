@@ -1,0 +1,36 @@
+# Core dependencies - INSTALL THESE FIRST
+torch==2.5.1
+torchvision==0.20.1
+torchaudio==2.5.1
+transformers>=4.30.0
+huggingface_hub>=0.16.0
+
+# Essential utilities
+numpy==1.26.4
+psutil==7.0.0
+tqdm==4.67.1
+
+# Quantization libraries - INSTALL THESE AFTER CORE DEPENDENCIES
+# Note: optimum[gptq] includes GPTQ support for optimum
+optimum[gptq]==1.24.0
+# Note: gptqmodel requires torch to be installed first
+# If you encounter issues with gptqmodel, install it separately after torch:
+# pip install gptqmodel<2.1.0
+gptqmodel<2.1.0
+bitsandbytes==0.42.0
+autoawq>=0.1.0
+
+# Visualization and reporting
+matplotlib==3.10.0
+colorama>=0.4.6
+jinja2==3.1.5
+
+# Data handling
+accelerate==1.5.2
+datasets==3.4.0
+
+# Development tools (optional but included for completeness)
+pytest==7.4.0
+black==25.1.0
+isort==6.0.0
+flake8>=6.0.0 

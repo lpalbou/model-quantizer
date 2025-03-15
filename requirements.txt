@@ -1,0 +1,34 @@
+# Core dependencies - required for basic functionality
+transformers>=4.30.0  # For model loading and tokenization
+huggingface_hub>=0.16.0  # For model downloading and publishing
+
+# Essential utilities - required for all operations
+numpy==1.26.4  # Required for array operations and calculations
+psutil==7.0.0  # For memory tracking
+tqdm==4.67.1   # For progress bars
+
+# Quantization-specific dependencies - install based on method used
+# For GPTQ quantization:
+# pip install optimum==1.24.0 gptqmodel<2.1.0
+# For BitsAndBytes quantization:
+# pip install bitsandbytes==0.42.0
+# For AWQ quantization:
+# pip install autoawq
+
+# Visualization dependencies - required for benchmark visualization
+# pip install matplotlib==3.10.0
+
+# PyTorch - install separately with the appropriate version for your system
+# pip install torch torchvision torchaudio
+
+# Optional utilities - install as needed
+# jinja2==3.1.5  # For model card templating
+# colorama>=0.4.6  # For colored terminal output
+# accelerate==1.5.2  # For distributed training
+# datasets==3.4.0  # For dataset handling
+
+# Development dependencies (optional)
+# pytest==7.4.0
+# black==25.1.0
+# isort==6.0.0
+# flake8>=6.0.0

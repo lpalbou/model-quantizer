@@ -46,6 +46,49 @@ The Model Quantizer provides a complete workflow for working with quantized mode
 pip install model-quantizer
 ```
 
+### Complete Installation (All Features)
+
+For a one-shot installation of all dependencies:
+
+```bash
+# Clone the repository
+git clone https://github.com/lpalbou/model-quantizer.git
+cd model-quantizer
+
+# Option 1: Use the installation script (recommended)
+# For Linux/macOS:
+chmod +x install_dependencies.sh
+./install_dependencies.sh
+
+# For Windows:
+install_dependencies.bat
+
+# Option 2: Manual installation from requirements file
+# Note: Some packages like gptqmodel require torch to be installed first
+pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1
+pip install -r requirements-all.txt
+
+# Install the package
+pip install -e .
+```
+
+### Modular Installation
+
+If you prefer a more modular approach, you can install only what you need:
+
+```bash
+# Install the base package
+pip install model-quantizer
+
+# Add specific features as needed
+pip install model-quantizer[gptq]         # For GPTQ quantization
+pip install model-quantizer[bitsandbytes] # For BitsAndBytes quantization
+pip install model-quantizer[awq]          # For AWQ quantization
+pip install model-quantizer[viz]          # For visualization tools
+pip install model-quantizer[data]         # For dataset handling
+pip install model-quantizer[all]          # For all features
+```
+
 ### From Source
 
 ```bash
@@ -293,6 +336,7 @@ Comprehensive documentation is available in the [docs](docs) directory:
 - [Benchmarking Guide](docs/benchmarking.md): How to benchmark quantized models
 - [Troubleshooting Guide](docs/troubleshooting.md): Solutions for common issues
 - [Publishing Guide](docs/publishing_guide.md): How to publish quantized models to Hugging Face Hub
+- [Platform Compatibility Guide](docs/platform_compatibility.md): Detailed information about compatibility with different platforms and Python versions
 
 ## Examples
 
@@ -357,15 +401,25 @@ See the [Phi-4-Mini Quantization Guide](docs/phi4_mini.md) for more details.
 
 ## Requirements
 
-- Python 3.8+
-- PyTorch 2.0+
-- Transformers 4.30+
-- Optimum 1.12+ (for GPTQ quantization)
+- Python 3.8+ (Python 3.11 and 3.12 fully supported and tested on macOS, Windows, and Linux)
+- PyTorch 2.0+ (2.5.1 recommended for best compatibility)
+- Transformers 4.30+ (4.49.0 tested and working)
+- Optimum[gptq] 1.24.0 (for GPTQ quantization - note the [gptq] extra is required)
 - BitsAndBytes 0.40+ (for BitsAndBytes quantization)
 - AutoAWQ 0.1+ (for AWQ quantization)
 - psutil (for memory tracking)
 - numpy (for statistical calculations)
 - matplotlib (for visualization)
+
+For a complete and reliable installation, use the provided installation scripts:
+```bash
+# For Linux/macOS:
+chmod +x install_dependencies.sh
+./install_dependencies.sh
+
+# For Windows:
+install_dependencies.bat
+```
 
 ## License
 
@@ -375,22 +429,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 After quantizing and benchmarking your model, you can publish it to the Hugging Face Hub:
 
-```bash
-model-quantizer microsoft/phi-4-mini-instruct --bits 4 --method gptq --publish --repo-id YOUR_USERNAME/phi-4-mini-gptq-4bit
 ```
-
-This will:
-1. Quantize the model
-2. Save it locally
-3. Generate a comprehensive model card with model details, quantization parameters, and estimated memory usage
-4. Upload it to the Hugging Face Hub under the specified repository ID
-
-You can also enhance your model card with benchmark results by running:
-
-```bash
-run-benchmark --original microsoft/phi-4-mini-instruct --quantized ./quantized-model --device cpu --max_tokens 100 --output_dir ./benchmark_results --update-model-card
-```
-
-This will automatically update the model card with memory usage, loading time, generation speed, and comparison with the original model.
-
-For more details, see the [Publishing Guide](docs/publishing_guide.md).

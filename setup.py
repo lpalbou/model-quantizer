@@ -11,10 +11,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="model-quantizer",
-    version="0.2.1",
+    version="0.3.1",
     author="Laurent-Philippe Albou",
     author_email="laurent.albou@gmail.com",
-    description="A tool for quantizing and saving Hugging Face models",
+    description="A tool for quantizing large language models",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/lpalbou/model-quantizer",
@@ -29,32 +29,58 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
     python_requires=">=3.8",
     install_requires=[
-        "torch>=2.0.0",
         "transformers>=4.30.0",
-        "optimum>=1.12.0",
-        "psutil>=5.9.0",
-        "numpy>=1.20.0",
-        "matplotlib>=3.5.0",
-        "accelerate>=0.20.0",
-        "datasets>=2.10.0",
         "huggingface_hub>=0.16.0",
-        "tqdm>=4.65.0",
-        "colorama>=0.4.6",
-        "jinja2>=3.0.0",
+        "numpy==1.26.4",
+        "psutil==7.0.0",
+        "tqdm==4.67.1",
     ],
     extras_require={
         "dev": [
-            "pytest>=7.0.0",
-            "black>=23.0.0",
-            "isort>=5.12.0",
+            "pytest==7.4.0",
+            "black==25.1.0",
+            "isort==6.0.0",
             "flake8>=6.0.0",
         ],
+        "viz": [
+            "matplotlib==3.10.0",
+            "colorama>=0.4.6",
+            "jinja2==3.1.5",
+        ],
+        "data": [
+            "datasets==3.4.0",
+            "accelerate==1.5.2",
+        ],
+        "gptq": [
+            "optimum[gptq]==1.24.0",
+            "gptqmodel<2.1.0",
+        ],
+        "bitsandbytes": ["bitsandbytes==0.42.0"],
         "awq": ["autoawq>=0.1.0"],
-        "bitsandbytes": ["bitsandbytes>=0.40.0"],
+        "all": [
+            # Dev dependencies
+            "pytest==7.4.0",
+            "black==25.1.0",
+            "isort==6.0.0",
+            "flake8>=6.0.0",
+            # Visualization
+            "matplotlib==3.10.0",
+            "colorama>=0.4.6",
+            "jinja2==3.1.5",
+            # Data handling
+            "datasets==3.4.0",
+            "accelerate==1.5.2",
+            # Quantization methods
+            "optimum[gptq]==1.24.0",
+            "gptqmodel<2.1.0",
+            "bitsandbytes==0.42.0",
+            "autoawq>=0.1.0",
+        ],
     },
     entry_points={
         "console_scripts": [
