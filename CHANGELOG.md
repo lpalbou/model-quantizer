@@ -2,21 +2,21 @@
 
 All notable changes to the Model Quantizer project will be documented in this file.
 
-## [0.3.3] - 2025-03-18
+## [0.3.3] - 2025-03-15
 
 ### Added
 - Added explicit links to GitHub repository and PyPI package in documentation
 - Improved model card template to include better credit to Model Quantizer
 - Enhanced installation instructions with direct links to PyPI
 
-## [0.3.2] - 2025-03-18
+## [0.3.2] - 2025-03-15
 
 ### Fixed
 - Fixed installation issue with run-benchmark command not finding the module
 - Added py_modules to setup.py to include standalone scripts in the package
 - Added fix_installation.py script to help users fix existing installations
 
-## [0.3.1] - 2025-03-17
+## [0.3.1] - 2025-03-15
 
 ### Fixed
 - Fixed GPTQ quantization issue by explicitly installing optimum with GPTQ support (`optimum[gptq]`)
@@ -28,7 +28,7 @@ All notable changes to the Model Quantizer project will be documented in this fi
 - Added detailed platform-specific documentation for macOS, Windows, and Linux
 - Enhanced troubleshooting guide with platform-specific information
 
-## [0.3.0] - 2025-03-17
+## [0.3.0] - 2025-03-15
 
 ### Fixed
 - Fixed dependency installation order issue with gptqmodel requiring torch to be installed first
@@ -36,14 +36,14 @@ All notable changes to the Model Quantizer project will be documented in this fi
 - Updated requirements-all.txt with clear instructions on installation order
 - Improved README.md with detailed installation options and troubleshooting guidance
 
-## [0.2.9] - 2025-03-16
+## [0.2.9] - 2025-03-15
 
 ### Added
 - Created `requirements-all.txt` for one-shot installation of all dependencies
 - Includes all core, quantization, visualization, and data handling packages
 - Provides a simple way for users to install everything needed with a single command
 
-## [0.2.8] - 2025-03-16
+## [0.2.8] - 2025-03-15
 
 ### Changed
 - Further refined dependencies to absolute minimum required set
@@ -52,7 +52,7 @@ All notable changes to the Model Quantizer project will be documented in this fi
 - Added detailed comments explaining the purpose of each dependency
 - Grouped GPTQ dependencies together in the extras
 
-## [0.2.7] - 2025-03-16
+## [0.2.7] - 2025-03-15
 
 ### Changed
 - Significantly reduced core dependencies to minimize installation issues
@@ -136,7 +136,7 @@ All notable changes to the Model Quantizer project will be documented in this fi
 - Inconsistent command-line interfaces across tools
 - Missing dependencies in setup.py
 
-## [0.1.0] - 2023-06-01
+## [0.1.0] - 2025-03-15
 
 ### Added
 - Initial release of Model Quantizer
