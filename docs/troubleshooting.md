@@ -4,6 +4,29 @@ This guide provides solutions for common issues encountered when using the Model
 
 ## Dependency Management
 
+### Complete Installation (v0.3.2+)
+
+As of version 0.3.2, we've fixed the installation issue with the `run-benchmark` command and improved the package structure:
+
+```bash
+# For Linux/macOS:
+chmod +x install_dependencies.sh
+./install_dependencies.sh
+
+# For Windows:
+install_dependencies.bat
+```
+
+If you're upgrading from a previous version and encounter issues with the `run-benchmark` command, you can run the fix script:
+
+```bash
+# Navigate to the model-quantizer repository
+cd model-quantizer
+
+# Run the fix script
+python fix_installation.py
+```
+
 ### Complete Installation (v0.3.1+)
 
 As of version 0.3.1, we provide installation scripts that ensure all dependencies, including GPTQ support for optimum, are properly installed:
@@ -407,6 +430,39 @@ ERROR: Loading a GPTQ quantized model requires optimum (`pip install optimum`)
 3. **If you're still having issues**, try installing the specific version of gptqmodel mentioned in the error:
    ```bash
    pip install gptqmodel>=2.1.0
+   ```
+
+### Run-Benchmark Command Issues (v0.3.2+)
+
+**Problem**: When trying to run the `run-benchmark` command, you encounter an error:
+
+```
+ModuleNotFoundError: No module named 'run_benchmark'
+```
+
+**Solution**: This issue has been fixed in version 0.3.2. If you're using an older version or experiencing this issue, you can:
+
+1. **Update to version 0.3.2 or later**:
+   ```bash
+   pip install --upgrade model-quantizer
+   ```
+
+2. **Run the fix script** (if you have the repository):
+   ```bash
+   # Navigate to the model-quantizer repository
+   cd model-quantizer
+   
+   # Run the fix script
+   python fix_installation.py
+   ```
+
+3. **Run the script directly**:
+   ```bash
+   # Navigate to the model-quantizer repository
+   cd model-quantizer
+   
+   # Run the script directly
+   python run_benchmark.py --original microsoft/Phi-4-mini-instruct --quantized ./phi4-mini-4bit --device cpu --max_tokens 50 --output_dir ./benchmark_results
    ```
 
 ### Memory Issues

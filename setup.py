@@ -11,7 +11,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="model-quantizer",
-    version="0.3.1",
+    version="0.3.2",
     author="Laurent-Philippe Albou",
     author_email="laurent.albou@gmail.com",
     description="A tool for quantizing large language models",
@@ -91,4 +91,5 @@ setup(
             "run-benchmark=run_benchmark:main_cli",
         ],
     },
+    py_modules=["run_benchmark", "benchmark_model", "visualize_benchmark", "chat_with_model"],
 ) 

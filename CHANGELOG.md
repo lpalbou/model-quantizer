@@ -2,6 +2,13 @@
 
 All notable changes to the Model Quantizer project will be documented in this file.
 
+## [0.3.2] - 2025-03-18
+
+### Fixed
+- Fixed installation issue with run-benchmark command not finding the module
+- Added py_modules to setup.py to include standalone scripts in the package
+- Added fix_installation.py script to help users fix existing installations
+
 ## [0.3.1] - 2025-03-17
 
 ### Fixed

@@ -1,6 +1,8 @@
 # Quantized models directory (to be published on Hugging Face)
 qmodels/
 
+publish_to_pypi.py
+
 # Benchmark results
 benchmark_results/
 benchmark_report/
