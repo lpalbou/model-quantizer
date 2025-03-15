@@ -10,7 +10,7 @@ A tool for quantizing and saving Hugging Face models, with comprehensive benchma
 
 ## Why Model Quantizer?
 
-- **Cross-Platform Compatibility**: BitsAndBytes doesn't work on macOS/OSX, but Hugging Face GPTQ implementation does
+- **Cross-Platform Compatibility**: BitsAndBytes doesn't work on macOS/OSX, but [Hugging Face GPTQ](https://huggingface.co/docs/transformers/en/quantization/gptq) implementation does
 - **Pre-Quantized Models**: Quantizing models with GPTQ takes time, so we provide tools to publish pre-quantized models for reuse
 - **Control Over Quantization**: Unlike other published quantized models, this tool gives you full control over the quantization process
 - **Test Before Publishing**: Comprehensive benchmarking and testing tools to validate your quantized model's performance before publishing
